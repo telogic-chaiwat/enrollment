@@ -9,7 +9,6 @@ RUN apk add --no-cache \
     pango-dev \
     cairo-dev \
     giflib-dev \
-    python \
     ; 
 RUN mkdir -p /home/node/app/node_modules && mkdir -p /home/node/app/logs && chown -R node:node /home/node/app
 RUN npm install pm2 -g
