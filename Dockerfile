@@ -3,12 +3,6 @@ FROM node:14-alpine
 RUN apk add --no-cache \
     build-base \
     g++ \
-    libpng \
-    libpng-dev \
-    jpeg-dev \
-    pango-dev \
-    cairo-dev \
-    giflib-dev \
     ; 
 RUN mkdir -p /home/node/app/node_modules && mkdir -p /home/node/app/logs && chown -R node:node /home/node/app
 RUN npm install pm2 -g
