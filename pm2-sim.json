@@ -1,0 +1,72 @@
+{
+    "apps": [
+        {
+            "exec_mode": "fork",
+            "instances": 1,
+            "script": "./tests/simulator/index.js",
+            "name": "Simulator",
+            "interpreter": "node",
+            "env": {
+                "server": {
+                    "cert": "./cert/server.crt",
+                    "key": "./cert/server.key",
+                    "use_https": false,
+                    "app_port": "9988",
+                    "app_host": "0.0.0.0",
+                    "health_check_url": [
+                        "/healthcheck"
+                    ]
+                },
+                "service": {
+                    "node_be": {
+                        "default": {
+                            "conn_type": "http",
+                            "ip": "0.0.0.0",
+                            "port": "3000",
+                            "path": "/",
+                            "max_retry": 3,
+                            "timeout": 3,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR"
+                        }
+                    },
+                    "mongo": {
+                        "default": {
+                            "conn_type": "mongodb",
+                            "ip": "0.0.0.0",
+                            "port": "27017",
+                            "db": "enrollment",
+                            "max_retry": 0,
+                            "timeout": 4,
+                            "retry_condition": "CONNECTION_ERROR",
+                            "connection_string": {
+                            }
+                        }
+                    },
+                    "redis": {
+                        "default": {
+                            "conn_type": "redis",
+                            "host": "127.0.0.1",
+                            "port": "6379",
+                            "max_retry": 0,
+                            "timeout": 5,
+                            "retry_condition": "CONNECTION_ERROR"
+                        }
+                    },
+                    "authFunctions": {
+                        "authUser" : {
+                            "conn_type": "http",
+                            "ip": "localhost",
+                            "port": "9988",
+                            "path": "",
+                            "max_retry": 1,
+                            "timeout": 1,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR",
+                            "access_token_exp" :   "86400",
+                            "refresh_token_exp" : "86400"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+	"apps": [{
+		"exec_mode": "fork",
+		"instances": 1,
+		"script": "./tests/simulator/index.js",
+		"name": "Node Simulator",
+		"interpreter": "node",
+		"env": {
+			"server": {
+				"app_host": "localhost",
+				"app_port": 9988,
+				"use_https": false,
+				"key": "./tests/crt/sim-server-key.pem",
+                "cert": "./tests/crt/sim-server-crt.pem",
+                "case": "success"
+			}
+		}
+	}]
+}
