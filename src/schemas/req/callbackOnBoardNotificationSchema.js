@@ -9,13 +9,13 @@ const bodySchema = Joi.object({
   'node_id': Joi.string().required(),
   'type': Joi.string().required().valid('create_identity_result'),
   'reference_id': Joi.string().required(),
-  'request_id': Joi.string().required(),
+  'request_id': Joi.string().optional(),
   'reference_group_code': Joi.string().required(),
   'success': Joi.boolean().required(),
   'error': Joi.object({
     'code': Joi.number().required(),
     'message': Joi.string().required(),
-  }).required(),
+  }).optional(),
 });
 
 module.exports = {
