@@ -76,7 +76,7 @@
                     },
                     "ndid" :{
                         "ndid_node":{
-                            "conn_type": "https",
+                            "conn_type": "http",
                             "ip": "10.144.9.196",
                             "port": "8080",
                             "path": "/idp/response",
@@ -92,7 +92,7 @@
                             }
                         },
                         "revoke" : {
-                            "conn_type": "https",
+                            "conn_type": "http",
                             "ip": "10.144.9.196",
                             "port": "8080",
                             "path": "/identity/citizen_id/:id/association_revoke",
