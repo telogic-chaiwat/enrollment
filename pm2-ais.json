@@ -108,7 +108,7 @@
                             },
                             "node_id" : "1676B7D4-A03B-4383-8DE7-059647417430",
                             "request_message" : "string",
-                            "callback_url" : "https://10.144.9.196:9101/idp/identity_modification_notification"
+                            "callback_url" : "https://10.144.9.196:9101/idp/association_revoke"
                         },
                         "onboard" : {
                             "conn_type": "https",
