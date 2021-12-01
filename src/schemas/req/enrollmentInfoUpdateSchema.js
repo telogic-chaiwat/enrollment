@@ -114,6 +114,7 @@ const bodySchema = Joi.object({
   'userId': Joi.string().required(),
   'referenceId': Joi.string().required(),
   'requester': Joi.string().required(),
+  'pin_regis': Joi.string().optional().allow(''),
   'msisdn': Joi.string().required(),
   'enrollmentInfo': Joi.object(enrollmentInfo).required(),
   'livePhoto': Joi.string().required(),
