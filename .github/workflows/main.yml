@@ -39,3 +39,6 @@ jobs:
       - name: docker push
         run: |
           docker push ${{ env.CONTAINER_REPOSITORY }}/ndid-be/enrollment:latest
+      - name: restart service
+        run: |
+          kubectl rollout restart deployment ndid-be-enrollment
