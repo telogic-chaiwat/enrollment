@@ -44,7 +44,7 @@ const customer_address_id_card = {
 
 const customer_address_contact = {
   'contact_street_address1': Joi.string().required(),
-  'contact_street_address2': Joi.string().required(),
+  'contact_street_address2': Joi.string().optional().allow(''),
   'contact_address_subdistrict': Joi.string().required(),
   'contact_address_district': Joi.string().required(),
   'contact_address_province': Joi.string().required(),
