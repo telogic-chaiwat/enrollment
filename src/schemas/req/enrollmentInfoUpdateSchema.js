@@ -33,7 +33,7 @@ const identifier = {
 
 const customer_address_id_card = {
   'id_card_street_address1': Joi.string().required(),
-  'id_card_street_address2': Joi.string().required(),
+  'id_card_street_address2': Joi.string().optional().allow(''),
   'id_card_address_subdistrict': Joi.string().required(),
   'id_card_address_district': Joi.string().required(),
   'id_card_address_province': Joi.string().required(),
