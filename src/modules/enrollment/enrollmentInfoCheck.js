@@ -58,7 +58,7 @@ module.exports.NAME = async function(req, res, next) {
 
   // hash card ID
   if (typeof req.body.id_card == 'string') {
-    const IdCard = hashMD5(req.body.id_card);
+    const IdCard = req.body.id_card;
     Object.assign(query, {
       'id_card': IdCard,
     });
