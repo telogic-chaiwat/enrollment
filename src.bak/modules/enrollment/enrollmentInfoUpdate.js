@@ -1,8 +1,8 @@
 module.exports.NAME = async function(req, res, next) {
   const headersReqSchema = this.utils().
-      schemas('req.enrollmentStatusUpdateSchema.headersSchema');
+      schemas('req.enrollmentInfoUpdateSchema.headersSchema');
   const bodyReqSchema = this.utils().
-      schemas('req.enrollmentStatusUpdateSchema.bodySchema');
+      schemas('req.enrollmentInfoUpdateSchema.bodySchema');
   const validateToken = this.utils().submodules('validateToken').
       modules('validateToken');
   const validateHeader = this.utils().submodules('validateHeader').
@@ -21,13 +21,17 @@ module.exports.NAME = async function(req, res, next) {
       .conf('default');
   const hashMD5 = this.utils().services('hash').
       modules('hashMD5');
+  const encodeBase64 = this.utils().services('base64Function')
+      .modules('encodeBase64');
   const createHttpsAgent = this.utils().submodules('createHttpsAgent')
       .modules('createHttpsAgent');
   const generateRandom = this.utils().services('basicFunction').
       modules('generateXTid');
+  const generateKey = this.utils().submodules('generateKeyPair')
+      .modules('generateKey');
 
   // init detail and summary log
-  const nodeCmd = 'enrollment_status_update';
+  const nodeCmd = 'enrollment_info_update';
   const appName = 'enroll';
   this.appName = appName;
   const identity = req.body.id_card || '';
@@ -69,17 +73,22 @@ module.exports.NAME = async function(req, res, next) {
   const query = {
     id_card: IdCard,
   };
-
-  let statusCheck = req.body.status;
-  if (typeof req.body.status == 'string') {
-    statusCheck = req.body.status.toLowerCase();
-  }
+  const enrollmentInfo = encodeBase64(JSON.stringify(req.body.enrollmentInfo));
 
   const set = {
     $set: {
-      status: statusCheck,
-      last_update_time: new Date(),
+      'msisdn': req.body.msisdn,
+      'enrollmentInfo': enrollmentInfo,
+      'livePhoto': req.body.livePhoto,
+      'last_update_time': new Date(),
     },
+    $setOnInsert: {
+      'status': 'active',
+      'create_time': new Date(),
+    },
+  };
+  const options ={
+    upsert: true,
   };
 
   // query mongo
@@ -90,6 +99,7 @@ module.exports.NAME = async function(req, res, next) {
     invoke: initInvoke,
     selector: query,
     update: set,
+    options: options,
     max_retry: confMongo.max_retry,
     timeout: (confMongo.timeout*1000),
     retry_condition: confMongo.retry_condition,
@@ -115,27 +125,29 @@ module.exports.NAME = async function(req, res, next) {
     this.summary().endASync();
     return;
   }
-
   const resp = buildResponse(status.SUCCESS);
   this.stat(appName+' returned '+nodeCmd+' '+'success');
   res.status(resp.status).send(resp.body);
   await this.waitFinished();
 
-
-  // new requirment send REVOKE REQ 08-10-2021
-  if (statusCheck === 'terminate') {
-    // update mongo with revoke info
+  // if new card
+  if (mongoRes.upserted) {
+    const keys = await generateKey();
     const referenceId = generateRandom('ndid');
+    const accessorId = generateRandom('ndid');
     const setRevokeMongo = {
       $set: {
-        revoke_reference_id: referenceId,
-        revoke_status: 'send request',
-        revoke_update_time: new Date(),
+        'onboard_reference_id': referenceId,
+        'onboard_accessor_id': accessorId,
+        'onboard_accessor_private_key': keys.privateKey,
+        'onboard_accessor_public_key': keys.publicKey,
+        'onboard_status': 'send request',
+        'onboard_update_time': new Date(),
+
       },
     };
-
     optionAttribut.update = setRevokeMongo;
-    optionAttribut.commandName = 'prepare_revoke';
+    optionAttribut.commandName = 'prepare_onboard';
 
     // eslint-disable-next-line prefer-const
     let mongoResRevoke = await mongoUpdate(this, optionAttribut);
@@ -151,33 +163,45 @@ module.exports.NAME = async function(req, res, next) {
       return;
     }
     // SEND REVOKE REQUEST
-    const revokeNodeName = 'revoke';
+    const onboardNodeName = 'onboard';
     const revokeServiceName = 'ndid';
-    const confRevoke = this.utils().services(revokeServiceName)
-        .conf(revokeNodeName);
+    const confOnBoard = this.utils().services(revokeServiceName)
+        .conf(onboardNodeName);
 
-    let url = confRevoke.conn_type +'://' + confRevoke.ip +
-        (confRevoke.port ? (':' + confRevoke.port) : '') +
-        confRevoke.path;
+    const url = confOnBoard.conn_type +'://' + confOnBoard.ip +
+    (confOnBoard.port ? (':' + confOnBoard.port) : '') +
+    confOnBoard.path;
 
-    url = url.replace(':id', req.body.id_card);
+    url.replace(':id', req.body.id_card);
     // const serverConfig = JSON.parse(process.env.server);
     // const callbackUrl = (serverConfig.use_https?'https':'http') +
-    //         '://' + serverConfig.app_host +
-    //         (serverConfig.app_port ? (':' + serverConfig.app_port) : '') +
-    //         confRevoke.callback_url;
+    //      '://' + serverConfig.app_host +
+    //      (serverConfig.app_port ? (':' + serverConfig.app_port) : '') +
+    //      confOnBoard.callback_url;
 
-    const callbackUrl = confRevoke.callback_url;
+    const callbackUrl = confOnBoard.callback_url;
 
     const headers = {
       'Content-Type': 'application/json',
     };
 
     const bodyData = {
-      'node_id': confRevoke.node_id,
+      'node_id': confOnBoard.node_id,
       'reference_id': referenceId,
+      'identity_list': [
+        {
+          'namespace': 'citizen_id',
+          'identifier': req.body.id_card,
+        },
+      ],
+      'mode': 2,
+      'accessor_type': 'RSA',
+      'accessor_public_key': keys.publicKey,
+      'accessor_id': accessorId,
       'callback_url': callbackUrl,
-      'request_message': confRevoke.request_message,
+      'ial': 2.3,
+      'request_message': confOnBoard.request_message,
+
     };
 
     const method = 'POST';
@@ -185,57 +209,57 @@ module.exports.NAME = async function(req, res, next) {
       method: method,
       headers: headers,
       _service: revokeServiceName,
-      _command: revokeNodeName,
+      _command: onboardNodeName,
       url: url,
       data: bodyData,
     };
 
     Object.assign(optionAttributRevoke,
-        {httpsAgent: createHttpsAgent(revokeServiceName, revokeNodeName)});
+        {httpsAgent: createHttpsAgent(revokeServiceName, onboardNodeName)});
 
     // eslint-disable-next-line prefer-const
-    let responseRevoke = await this.utils().http().
+    let responseOnBoard = await this.utils().http().
         request(optionAttributRevoke);
 
     let status = 'send other error';
-    if (this.utils().http().isError(responseRevoke)) {
-      if (responseRevoke == 'TIMEOUT') {
+    if (this.utils().http().isError(responseOnBoard)) {
+      if (responseOnBoard == 'TIMEOUT') {
         status = 'send connection timeout';
-      } else if (responseRevoke == 'CONNECTION_ERROR') {
+      } else if (responseOnBoard == 'CONNECTION_ERROR') {
         status = 'send connection error';
       }
-    } else if (responseRevoke.status && responseRevoke.status !=202) {
-      this.debug('error status code: ' + responseRevoke.status);
-      const descError = (responseRevoke.status ==401)?'unauthorized':
-                        (responseRevoke.status ==404)?'data not found':
-                        'other error';
+    } else if (responseOnBoard.status && responseOnBoard.status !=202) {
+      this.debug('error status code: ' + responseOnBoard.status);
+      const descError = (responseOnBoard.status ==401)?'unauthorized':
+                    (responseOnBoard.status ==404)?'data not found':
+                    'other error';
       status = 'send other error';
       this.stat(appName+' recv '+revokeServiceName+' '+
-      revokeNodeName+' error system');
-      this.summary().addErrorBlock(revokeServiceName, revokeNodeName,
-          responseRevoke.status, descError);
+            onboardNodeName+' error system');
+      this.summary().addErrorBlock(revokeServiceName, onboardNodeName,
+          responseOnBoard.status, descError);
     } else {
       status = 'send success';
       this.stat(appName+' recv '+revokeServiceName+' '+
-                  revokeNodeName+' response');
-      this.summary().addErrorBlock(revokeServiceName, revokeNodeName,
-          responseRevoke.status, 'success');
+              onboardNodeName+' response');
+      this.summary().addErrorBlock(revokeServiceName, onboardNodeName,
+          responseOnBoard.status, 'success');
     }
     optionAttribut.update = {
       $set: {
-        revoke_status: status,
-        revoke_update_time: new Date(),
+        onboard_status: status,
+        onboard_update_time: new Date(),
       },
     };
     optionAttribut.selector = {
-      'revoke_reference_id': referenceId,
+      'onboard_reference_id': referenceId,
     };
-    optionAttribut.commandName = 'update_status_revoke';
+    optionAttribut.commandName = 'update_status_onboard';
     // eslint-disable-next-line prefer-const
     mongoResRevoke = await mongoUpdate(this, optionAttribut);
   }
-
   this.detail().end();
   this.summary().endASync();
 };
+
 

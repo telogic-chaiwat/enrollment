@@ -7,13 +7,9 @@ const headersSchema = Joi.object({
 });
 
 const bodySchema = Joi.object({
-  'id_card': Joi.string().optional().length(13),
+  'id_card': Joi.string().required().length(13),
   'requester': Joi.string().required(),
-  'reference_group_code': Joi.string().when('id_card', {
-    is: Joi.exist(),
-    then: Joi.optional(),
-    otherwise: Joi.required(),
-  }),
+  'info_type': Joi.string().valid('text', 'photo', 'all').required(),
 
 });
 

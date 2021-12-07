@@ -57,7 +57,7 @@ module.exports.NAME = async function(req, res, next) {
   const IdCard = hashMD5(req.body.id_card);
   const query = {
     id_card: IdCard,
-    status: {$ne: 'terminate'},
+    status: {$ne: 'Terminate'},
   };
 
   const options = {

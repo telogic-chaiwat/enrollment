@@ -34,11 +34,6 @@ module.exports.NAME = async function(req, res, next) {
       },
     };
 
-    if (req.body.reference_group_code) {
-      Object.assign(set['$set'], {
-        'reference_group_code': req.body.reference_group_code,
-      });
-    }
     // query mongo
     const initInvoke = this.detail().InitInvoke;
     const optionAttribut = {
