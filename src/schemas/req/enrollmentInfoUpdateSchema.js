@@ -33,7 +33,7 @@ const identifier = {
 
 const customer_address_id_card = {
   'id_card_street_address1': Joi.string().required(),
-  'id_card_street_address2': Joi.string().required(),
+  'id_card_street_address2': Joi.string().optional().allow(''),
   'id_card_address_subdistrict': Joi.string().required(),
   'id_card_address_district': Joi.string().required(),
   'id_card_address_province': Joi.string().required(),
@@ -44,7 +44,7 @@ const customer_address_id_card = {
 
 const customer_address_contact = {
   'contact_street_address1': Joi.string().required(),
-  'contact_street_address2': Joi.string().required(),
+  'contact_street_address2': Joi.string().optional().allow(''),
   'contact_address_subdistrict': Joi.string().required(),
   'contact_address_district': Joi.string().required(),
   'contact_address_province': Joi.string().required(),
@@ -114,6 +114,7 @@ const bodySchema = Joi.object({
   'userId': Joi.string().required(),
   'referenceId': Joi.string().required(),
   'requester': Joi.string().required(),
+  'pin_regis': Joi.string().optional().allow(''),
   'msisdn': Joi.string().required(),
   'enrollmentInfo': Joi.object(enrollmentInfo).required(),
   'livePhoto': Joi.string().required(),
