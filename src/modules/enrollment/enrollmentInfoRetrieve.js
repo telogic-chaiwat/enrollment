@@ -19,8 +19,8 @@ module.exports.NAME = async function(req, res, next) {
       .modules('collectionMongo');
   const confMongo = this.utils().services('mongo')
       .conf('default');
-  const hashMD5 = this.utils().services('hash').
-      modules('hashMD5');
+  // const hashMD5 = this.utils().services('hash').
+  //    modules('hashMD5');
   const decodeBase64 = this.utils().services('base64Function')
       .modules('decodeBase64');
 
@@ -54,7 +54,7 @@ module.exports.NAME = async function(req, res, next) {
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
 
   // hash card ID
-  const IdCard = req.body.id_card;
+  const IdCard = req.body.id_card;// hashMD5(req.body.id_card);
   const query = {
     id_card: IdCard,
     status: {$ne: 'terminate'},

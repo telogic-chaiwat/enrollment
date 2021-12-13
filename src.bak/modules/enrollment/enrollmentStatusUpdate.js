@@ -65,13 +65,19 @@ module.exports.NAME = async function(req, res, next) {
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
 
   // hash card ID
-  const IdCard = hashMD5(req.body.id_card);
+  const IdCard = req.body.id_card;
   const query = {
     id_card: IdCard,
   };
+
+  let statusCheck = req.body.status;
+  if (typeof req.body.status == 'string') {
+    statusCheck = req.body.status.toLowerCase();
+  }
+
   const set = {
     $set: {
-      status: req.body.status,
+      status: statusCheck,
       last_update_time: new Date(),
     },
   };
@@ -115,8 +121,9 @@ module.exports.NAME = async function(req, res, next) {
   res.status(resp.status).send(resp.body);
   await this.waitFinished();
 
+
   // new requirment send REVOKE REQ 08-10-2021
-  if (req.body.status === 'Terminate') {
+  if (statusCheck === 'terminate') {
     // update mongo with revoke info
     const referenceId = generateRandom('ndid');
     const setRevokeMongo = {

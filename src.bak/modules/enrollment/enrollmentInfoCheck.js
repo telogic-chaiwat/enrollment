@@ -52,18 +52,32 @@ module.exports.NAME = async function(req, res, next) {
   this.stat(appName+' received '+nodeCmd+' request');
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
 
-  // hash card ID
-  const IdCard = hashMD5(req.body.id_card);
   const query = {
-    id_card: IdCard,
-    status: {$ne: 'Terminate'},
+    status: {$ne: 'terminate'},
   };
+
+  // hash card ID
+  if (typeof req.body.id_card == 'string') {
+    const IdCard = req.body.id_card;
+    Object.assign(query, {
+      'id_card': IdCard,
+    });
+  } else {
+    // id card is not available
+    Object.assign(query, {
+      'reference_group_code': req.body.reference_group_code,
+    });
+  }
+
+
   const options = {
     projection: {
-      _id: 0,
-      create_time: 1,
-      last_update_time: 1,
-      msisdn: 1,
+      '_id': 0,
+      'create_time': 1,
+      'last_update_time': 1,
+      'msisdn': 1,
+      'id_card': 1,
+      'reference_group_code': 1,
     },
   };
   // query mongo

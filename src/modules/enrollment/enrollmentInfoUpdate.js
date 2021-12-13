@@ -19,8 +19,8 @@ module.exports.NAME = async function(req, res, next) {
       .modules('collectionMongo');
   const confMongo = this.utils().services('mongo')
       .conf('default');
-  const hashMD5 = this.utils().services('hash').
-      modules('hashMD5');
+  // const hashMD5 = this.utils().services('hash').
+  //    modules('hashMD5');
   const encodeBase64 = this.utils().services('base64Function')
       .modules('encodeBase64');
   const createHttpsAgent = this.utils().submodules('createHttpsAgent')
@@ -69,7 +69,7 @@ module.exports.NAME = async function(req, res, next) {
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
 
   // hash card ID
-  const IdCard = req.body.id_card;
+  const IdCard = req.body.id_card;// hashMD5(req.body.id_card);
   const query = {
     id_card: IdCard,
   };
@@ -77,9 +77,7 @@ module.exports.NAME = async function(req, res, next) {
 
   const set = {
     $set: {
-      'msisdn': req.body.msisdn,
       'enrollmentInfo': enrollmentInfo,
-      'livePhoto': req.body.livePhoto,
       'last_update_time': new Date(),
     },
     $setOnInsert: {
@@ -87,6 +85,19 @@ module.exports.NAME = async function(req, res, next) {
       'create_time': new Date(),
     },
   };
+
+
+  if (req.body.msisdn) {
+    Object.assign(set['$set'], {
+      'msisdn': req.body.msisdn,
+    });
+  }
+
+  if (req.body.livePhoto) {
+    Object.assign(set['$set'], {
+      'livePhoto': req.body.livePhoto,
+    });
+  }
   const options ={
     upsert: true,
   };

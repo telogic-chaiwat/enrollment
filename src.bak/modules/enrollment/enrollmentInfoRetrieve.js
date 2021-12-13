@@ -54,10 +54,10 @@ module.exports.NAME = async function(req, res, next) {
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
 
   // hash card ID
-  const IdCard = hashMD5(req.body.id_card);
+  const IdCard = req.body.id_card;
   const query = {
     id_card: IdCard,
-    status: {$ne: 'Terminate'},
+    status: {$ne: 'terminate'},
   };
 
   const options = {

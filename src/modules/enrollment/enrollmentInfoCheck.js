@@ -20,8 +20,8 @@ module.exports.NAME = async function(req, res, next) {
       .modules('collectionMongo');
   const confMongo = this.utils().services('mongo')
       .conf('default');
-  const hashMD5 = this.utils().services('hash').
-      modules('hashMD5');
+  // const hashMD5 = this.utils().services('hash').
+  //     modules('hashMD5');
 
   // init detail and summary log
   const nodeCmd = 'enrollment_info_check';
@@ -58,7 +58,7 @@ module.exports.NAME = async function(req, res, next) {
 
   // hash card ID
   if (typeof req.body.id_card == 'string') {
-    const IdCard = req.body.id_card;
+    const IdCard =req.body.id_card;// hashMD5(req.body.id_card);
     Object.assign(query, {
       'id_card': IdCard,
     });
