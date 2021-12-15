@@ -14,7 +14,7 @@ module.exports.NAME = async function(req, res, next) {
   const buildResponse = this.utils().submodules('buildResponse')
       .modules('buildResponse');
   const mongoUpdate = this.utils().services('mongoFunction')
-      .modules('findOneAndUpdate');
+      .modules('update');
   const collectionName = this.utils().services('enum')
       .modules('collectionMongo');
   const confMongo = this.utils().services('mongo')
@@ -100,7 +100,6 @@ module.exports.NAME = async function(req, res, next) {
   }
   const options ={
     upsert: true,
-    returnNewDocument: false,
   };
 
   // query mongo
@@ -109,7 +108,7 @@ module.exports.NAME = async function(req, res, next) {
     collection: collectionName.ENROLL_INFORMATION,
     commandName: 'update_enrollment_info',
     invoke: initInvoke,
-    query: query,
+    selector: query,
     update: set,
     options: options,
     max_retry: confMongo.max_retry,
@@ -119,7 +118,7 @@ module.exports.NAME = async function(req, res, next) {
 
   const mongoRes = await mongoUpdate(this, optionAttribut);
 
-  if ( typeof(mongoRes) == 'object' && mongoRes.lastErrorObject.n < 1) {
+  if ( typeof(mongoRes) == 'object' && mongoRes.n < 1) {
     this.stat(appName+' returned '+nodeCmd+' '+'error');
     const resp = buildResponse(status.DATA_NOT_FOUND);
     res.status(resp.status).send(resp.body);
@@ -142,11 +141,8 @@ module.exports.NAME = async function(req, res, next) {
   res.status(resp.status).send(resp.body);
   await this.waitFinished();
 
-  // check previous status
-  const prevStatus = (mongoRes.value)?mongoRes.value.status:null;
-
   // if new card
-  if (mongoRes.lastErrorObject.upserted || prevStatus =='terminate') {
+  if (mongoRes.upserted) {
     const keys = await generateKey();
     const referenceId = generateRandom('ndid');
     const accessorId = generateRandom('ndid');
@@ -158,7 +154,6 @@ module.exports.NAME = async function(req, res, next) {
         'onboard_accessor_public_key': keys.publicKey,
         'onboard_status': 'send request',
         'onboard_update_time': new Date(),
-        'status': 'active',
 
       },
     };
@@ -267,11 +262,6 @@ module.exports.NAME = async function(req, res, next) {
         onboard_update_time: new Date(),
       },
     };
-    if (responseOnBoard.data && responseOnBoard.data.accessor_id ) {
-      Object.assign(optionAttribut.update['$set'], {
-        accessor_id: responseOnBoard.data.accessor_id,
-      });
-    }
     optionAttribut.selector = {
       'onboard_reference_id': referenceId,
     };

@@ -78,8 +78,6 @@ module.exports.NAME = async function(req, res, next) {
       'msisdn': 1,
       'id_card': 1,
       'reference_group_code': 1,
-      'accessor_id': 1,
-      'accessor_private_key': '$onboard_accessor_private_key',
     },
   };
   // query mongo
