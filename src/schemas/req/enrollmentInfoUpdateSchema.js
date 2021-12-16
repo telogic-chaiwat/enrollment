@@ -102,7 +102,7 @@ const enrollmentInfo = {
   'office_address': Joi.object(office_address).required(),
   'customer_contact': Joi.object(customer_contact).optional(),
   'customer_biometric': Joi.object(customer_biometric).optional(),
-  'cust_created_date': Joi.string().optional(),
+  'cust_created_date': Joi.string().optional().allow(''),
 
 };
 
