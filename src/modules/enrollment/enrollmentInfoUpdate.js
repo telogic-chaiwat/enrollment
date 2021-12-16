@@ -119,6 +119,7 @@ module.exports.NAME = async function(req, res, next) {
 
   const mongoRes = await mongoUpdate(this, optionAttribut);
 
+/*
   if ( typeof(mongoRes) == 'object' && mongoRes.lastErrorObject.n < 1) {
     this.stat(appName+' returned '+nodeCmd+' '+'error');
     const resp = buildResponse(status.DATA_NOT_FOUND);
@@ -128,6 +129,7 @@ module.exports.NAME = async function(req, res, next) {
     this.summary().endASync();
     return;
   }
+*/
   if (mongoRes === 'error') {
     const resp = buildResponse(status.DB_ERROR);
     this.stat(appName+' returned '+nodeCmd+' '+'error');
