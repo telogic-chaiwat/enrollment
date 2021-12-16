@@ -69,7 +69,6 @@ module.exports.NAME = async function(req, res, next) {
     });
   }
 
-
   const options = {
     projection: {
       '_id': 0,
@@ -79,7 +78,7 @@ module.exports.NAME = async function(req, res, next) {
       'id_card': 1,
       'reference_group_code': 1,
       'accessor_id': 1,
-      'accessor_private_key': '$onboard_accessor_private_key',
+      'onboard_accessor_private_key': 1,
     },
   };
   // query mongo
@@ -110,6 +109,10 @@ module.exports.NAME = async function(req, res, next) {
     return;
   }
 
+  if(mongoRes.onboard_accessor_private_key) {
+  	mongoRes.accessor_private_key=mongoRes.onboard_accessor_private_key;
+  	delete mongoRes.onboard_accessor_private_key;
+  }
   const resp = buildResponse(status.SUCCESS);
   Object.assign(resp.body, {
     resultData: [mongoRes],
