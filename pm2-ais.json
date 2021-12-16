@@ -133,17 +133,15 @@
                 },
                 "app": {
                     "key_pair_config" :{
-                        "modulusLength" : 4096,
-                        "publicKeyEncoding": {
-                            "type": "spki",
-                            "format": "pem"
-                            },
-                            "privateKeyEncoding": {
-                            "type": "pkcs8",
-                            "format": "pem",
-                            "cipher": "aes-256-cbc",
-                            "passphrase": "top secret"
-                            }
+			modulusLength: 2048,
+      			publicKeyEncoding: {
+        		type: 'pkcs1',
+        		format: 'pem'
+      			},
+      			privateKeyEncoding: {
+        		type: 'pkcs1',
+        		format: 'pem'
+      			}
                     },
                     "example_config_1": "foo",
                     "example_config_2": {

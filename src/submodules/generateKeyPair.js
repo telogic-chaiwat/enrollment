@@ -3,9 +3,17 @@ module.exports.generateKey = function() {
     const confKey = this.utils().app().conf('key_pair_config');
     const defaultConfig = {
       modulusLength: 2048,
+      publicKeyEncoding: {
+        type: 'pkcs1',
+        format: 'pem'
+      },
+      privateKeyEncoding: {
+        type: 'pkcs1',
+        format: 'pem'
+      }
     };
     const {generateKeyPair} = require('crypto');
-    generateKeyPair('rsa',defaultConfig,
+    generateKeyPair('rsa', confKey || defaultConfig,
         (err, publicKey, privateKey) => {
           // Handle errors and use the generated key pair.
 
