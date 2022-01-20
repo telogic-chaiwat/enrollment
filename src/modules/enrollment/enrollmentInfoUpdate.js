@@ -218,6 +218,8 @@ module.exports.NAME = async function(req, res, next) {
       'accessor_id': accessorId,
       'callback_url': callbackUrl,
       'ial': 2.3,
+      'lial': false,
+      'laal': false,
       'request_message': confOnBoard.request_message,
 
     };
