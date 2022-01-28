@@ -69,6 +69,7 @@ module.exports.NAME = async function(req, res, next) {
     });
   }
 
+
   const options = {
     projection: {
       '_id': 0,
@@ -79,8 +80,10 @@ module.exports.NAME = async function(req, res, next) {
       'reference_group_code': 1,
       'accessor_id': 1,
       'onboard_accessor_private_key': 1,
+      'onboard_update_time': 1,
     },
   };
+
   // query mongo
   const initInvoke = this.detail().InitInvoke;
   const optionAttribut = {
@@ -108,12 +111,22 @@ module.exports.NAME = async function(req, res, next) {
     res.status(resp.status).send(resp.body);
     return;
   }
-
-  if(mongoRes.onboard_accessor_private_key) {
-  	mongoRes.accessor_private_key=mongoRes.onboard_accessor_private_key;
-  	delete mongoRes.onboard_accessor_private_key;
+  if (mongoRes.onboard_accessor_private_key) {
+    Object.assign(mongoRes, {
+      accessor_private_key: mongoRes.onboard_accessor_private_key,
+    });
   }
+  delete mongoRes.onboard_accessor_private_key;
   const resp = buildResponse(status.SUCCESS);
+
+  if (mongoRes.onboard_update_time) {
+    const onboardTime = new Date(mongoRes.onboard_update_time);
+    Object.assign(mongoRes, {
+      onboard_time: onboardTime.getTime(),
+    });
+    delete mongoRes.onboard_update_time;
+  }
+
   Object.assign(resp.body, {
     resultData: [mongoRes],
   });
